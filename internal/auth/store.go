@@ -39,18 +39,36 @@ func (s *Store) SeedDefaultAdmin() error {
 	if err := s.db.QueryRow(`SELECT COUNT(1) FROM users`).Scan(&cnt); err != nil {
 		return err
 	}
-	if cnt > 0 {
-		return nil
+	// Dev convenience:
+	// - If DB is empty: create default admin.
+	// - If DB already has the default user: ensure it stays admin+active so you don't lock yourself out.
+	if cnt == 0 {
+		_, err := s.CreateUser(CreateUserInput{
+			Email:    "admin@example.com",
+			Name:     "Admin",
+			Role:     RoleAdmin,
+			Password: "admin",
+		})
+		return err
 	}
-	// Default credentials (dev convenience):
-	// admin@example.com / admin
-	_, err := s.CreateUser(CreateUserInput{
-		Email:    "admin@example.com",
-		Name:     "Admin",
-		Role:     RoleAdmin,
-		Password: "admin",
-	})
-	return err
+
+	var id int64
+	err := s.db.QueryRow(`SELECT id FROM users WHERE email = ? LIMIT 1`, "admin@example.com").Scan(&id)
+	if err != nil {
+		// If there are users but not the default admin, don't change anything.
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil
+		}
+		return err
+	}
+	if _, err := s.db.Exec(
+		`UPDATE users SET role = ?, is_active = 1, updated_at = (strftime('%Y-%m-%dT%H:%M:%fZ','now')) WHERE id = ?`,
+		string(RoleAdmin),
+		id,
+	); err != nil {
+		return err
+	}
+	return nil
 }
 
 type CreateUserInput struct {
