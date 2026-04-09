@@ -56,7 +56,7 @@ templ UsersContent(dev bool) {
 			<div id="react-admin-root" data-page="users"></div>
 		</div>
 	</div>
-	@AdminScripts(dev)
+	@AdminScripts()
 }
 
 type ProjectsProps struct{}
@@ -79,7 +79,7 @@ templ ProjectsContent(dev bool) {
 			<div id="react-admin-root" data-page="projects"></div>
 		</div>
 	</div>
-	@AdminScripts(dev)
+	@AdminScripts()
 }
 
 templ ErrorPage(title string, message string) {
@@ -98,11 +98,16 @@ templ ErrorPage(title string, message string) {
 	</html>
 }
 
-templ AdminScripts(dev bool) {
-	if dev {
-		<script type="module" src="http://localhost:5173/src/admin-entry.tsx"></script>
-	} else {
-		<script type="module" src="/assets/admin-entry.js"></script>
-	}
+templ AdminScripts() {
+	// Vite dev server が生きていればそれを使い、落ちていれば /assets のビルド成果物へフォールバック。
+	<script type="module">
+		{`(async () => {
+  try {
+    await import('http://localhost:5173/src/admin-entry.tsx');
+  } catch (e) {
+    await import('/assets/admin-entry.js');
+  }
+})();`}
+	</script>
 }
 
