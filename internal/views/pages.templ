@@ -1,0 +1,108 @@
+package views
+
+import (
+	"context"
+	"io"
+
+	"example.com/go-templ-react-admin/internal/auth"
+)
+
+type DashboardProps struct{}
+
+templ DashboardPage(layout AuthLayoutProps, p DashboardProps) {
+	@AuthLayout(layout, templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
+		return DashboardContent(layout.User).Render(ctx, w)
+	}))
+}
+
+templ DashboardContent(u *auth.User) {
+	<div class="panel">
+		<div class="panelHeader">
+			<div>
+				<div style="font-weight:800">Dashboard</div>
+				<div class="muted" style="font-size:12px">管理機能の入口</div>
+			</div>
+			<span class="badge">MPA + React islands</span>
+		</div>
+		<div class="panelBody">
+			<p class="muted">ようこそ。左上のナビから Users / Projects を開いてください。</p>
+			if u != nil {
+				<ul>
+					<li>ログイン中: { u.Email }</li>
+					<li>ロール: { string(u.Role) }</li>
+				</ul>
+			}
+		</div>
+	</div>
+}
+
+type UsersProps struct{}
+
+templ UsersPage(layout AuthLayoutProps, p UsersProps) {
+	@AuthLayout(layout, templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
+		return UsersContent(layout.Dev).Render(ctx, w)
+	}))
+}
+
+templ UsersContent(dev bool) {
+	<div class="panel">
+		<div class="panelHeader">
+			<div>
+				<div style="font-weight:800">Users</div>
+				<div class="muted" style="font-size:12px">検索 / ページング / ロール変更 / 有効化切り替え</div>
+			</div>
+		</div>
+		<div class="panelBody">
+			<div id="react-admin-root" data-page="users"></div>
+		</div>
+	</div>
+	@AdminScripts(dev)
+}
+
+type ProjectsProps struct{}
+
+templ ProjectsPage(layout AuthLayoutProps, p ProjectsProps) {
+	@AuthLayout(layout, templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
+		return ProjectsContent(layout.Dev).Render(ctx, w)
+	}))
+}
+
+templ ProjectsContent(dev bool) {
+	<div class="panel">
+		<div class="panelHeader">
+			<div>
+				<div style="font-weight:800">Projects</div>
+				<div class="muted" style="font-size:12px">検索 / ページング / 作成</div>
+			</div>
+		</div>
+		<div class="panelBody">
+			<div id="react-admin-root" data-page="projects"></div>
+		</div>
+	</div>
+	@AdminScripts(dev)
+}
+
+templ ErrorPage(title string, message string) {
+	<!doctype html>
+	<html lang="ja">
+		<head>
+			<meta charset="utf-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1"/>
+			<title>{ title }</title>
+		</head>
+		<body>
+			<h1>{ title }</h1>
+			<p>{ message }</p>
+			<p><a href="/">戻る</a></p>
+		</body>
+	</html>
+}
+
+templ AdminScripts(dev bool) {
+	if dev {
+		<script type="module" src="http://localhost:5173/src/admin-entry.tsx"></script>
+	} else {
+		<script type="module" src="/assets/admin-entry.js"></script>
+	}
+}
+

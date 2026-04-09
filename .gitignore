@@ -1,0 +1,18 @@
+/.DS_Store
+
+# Go
+/server
+/tmp/
+
+# App runtime data
+/data/
+*.db
+*.db-*
+
+# Frontend
+/web/node_modules/
+/web/dist/
+
+# Vite build output (we commit built assets? no)
+/static/assets/
+
