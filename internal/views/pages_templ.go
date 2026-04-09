@@ -334,7 +334,7 @@ func AdminScripts() templ.Component {
 			templ_7745c5c3_Var13 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "<script type=\"module\">\n\t\t{`(async () => {\n  try {\n    await import('http://localhost:5173/src/admin-entry.tsx');\n  } catch (e) {\n    await import('/assets/admin-entry.js');\n  }\n})();`}\n\t</script>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "<script type=\"module\">\n\t\t{`(async () => {\n  const showBootError = (err) => {\n    console.error('[admin] failed to load react island', err);\n    const el = document.getElementById('react-admin-root');\n    if (!el) return;\n    el.innerHTML = \\`\n      <div style=\"border:1px solid rgba(255,107,107,.4);background:rgba(255,107,107,.09);color:#ffd6d6;padding:12px;border-radius:12px\">\n        <div style=\"font-weight:800;margin-bottom:6px\">React が読み込めていません</div>\n        <div style=\"opacity:.9;font-size:13px;line-height:1.5\">\n          開発なら <code>cd web && npm run dev</code> を起動してください。<br/>\n          ビルド運用なら <code>cd web && npm run build</code> の後にサーバを起動してください。\n        </div>\n      </div>\\`;\n  };\n  try {\n    await import('http://localhost:5173/src/admin-entry.tsx');\n    return;\n  } catch (e) {\n    // dev server not available -> try built assets\n  }\n  try {\n    await import('/assets/admin-entry.js');\n  } catch (e) {\n    showBootError(e);\n  }\n})();`}\n\t</script>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

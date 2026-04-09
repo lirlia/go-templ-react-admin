@@ -102,10 +102,29 @@ templ AdminScripts() {
 	// Vite dev server が生きていればそれを使い、落ちていれば /assets のビルド成果物へフォールバック。
 	<script type="module">
 		{`(async () => {
+  const showBootError = (err) => {
+    console.error('[admin] failed to load react island', err);
+    const el = document.getElementById('react-admin-root');
+    if (!el) return;
+    el.innerHTML = \`
+      <div style="border:1px solid rgba(255,107,107,.4);background:rgba(255,107,107,.09);color:#ffd6d6;padding:12px;border-radius:12px">
+        <div style="font-weight:800;margin-bottom:6px">React が読み込めていません</div>
+        <div style="opacity:.9;font-size:13px;line-height:1.5">
+          開発なら <code>cd web && npm run dev</code> を起動してください。<br/>
+          ビルド運用なら <code>cd web && npm run build</code> の後にサーバを起動してください。
+        </div>
+      </div>\`;
+  };
   try {
     await import('http://localhost:5173/src/admin-entry.tsx');
+    return;
   } catch (e) {
+    // dev server not available -> try built assets
+  }
+  try {
     await import('/assets/admin-entry.js');
+  } catch (e) {
+    showBootError(e);
   }
 })();`}
 	</script>
